@@ -1,4 +1,3 @@
-use oxc_ecmascript::constant_evaluation::ConstantValue;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use oxc_allocator::{Allocator, BitSet};
@@ -45,6 +44,36 @@ impl<'a> PassDirty<'a> {
     }
 }
 
+/// Return-value knowledge for a function that is pure (non-async,
+/// non-generator, side-effect-free body, plain params, read-only binding).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PureReturn {
+    /// Empty body: the call always evaluates to `undefined`, so it is
+    /// replaceable by `void 0`.
+    Undefined,
+    /// Pure, but the return value is unknown.
+    Opaque,
+}
+
+/// What the pure-function recorder learned about a named function literal.
+/// An entry exists when at least one fact is present; a symbol with neither
+/// fact is removed from the map (see `try_save_pure_function`).
+///
+/// `PartialEq` is load-bearing: `upsert_function_summary` compares the fresh
+/// summary against the stored one to detect a mid-run fact upgrade, which
+/// must force another fixed-point pass (see its docs).
+#[derive(Debug, PartialEq, Eq)]
+pub struct FunctionSummary {
+    /// `Some(..)` ⇔ pure under the existing gates (non-async, non-generator,
+    /// side-effect-free body, plain params, read-only binding).
+    pub pure_return: Option<PureReturn>,
+    /// Smallest `N` such that every argument at index `>= N` can be dropped at
+    /// a call site (its parameter is unused, or it is beyond the declared
+    /// params). Present only when the arg-drop gates pass. `usize`, NOT `u8`:
+    /// param count can exceed 255 and truncation would be unsound.
+    pub dead_arg_prefix: Option<usize>,
+}
+
 pub struct MinifierState<'a> {
     pub source_type: SourceType,
 
@@ -67,8 +96,9 @@ pub struct MinifierState<'a> {
     /// out. See the `if ctx.state.dce` branch in `peephole/mod.rs`.
     pub dce: bool,
 
-    /// The return value of function declarations that are pure
-    pub pure_functions: FxHashMap<SymbolId, Option<ConstantValue<'a>>>,
+    /// Facts learned about named function literals: whether they are pure and,
+    /// independently, how many trailing arguments call sites may drop.
+    pub pure_functions: FxHashMap<SymbolId, FunctionSummary>,
 
     pub symbol_values: SymbolValues<'a>,
 

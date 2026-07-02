@@ -15,8 +15,12 @@ use oxc_semantic::{IsGlobalReference, SymbolId};
 use oxc_str::format_str;
 use oxc_syntax::{reference::ReferenceId, scope::ScopeFlags};
 
+use std::collections::hash_map::Entry;
+
 use crate::{
-    generated::ancestor::Ancestor, options::CompressOptions, state::MinifierState,
+    generated::ancestor::Ancestor,
+    options::CompressOptions,
+    state::{FunctionSummary, MinifierState},
     symbol_value::SymbolValue,
 };
 
@@ -470,5 +474,45 @@ impl<'a> TraverseCtx<'a, MinifierState<'a>> {
     pub fn drop_variable_declarator(&mut self, decl: &VariableDeclarator<'a>) {
         self.dirty_diff().visit_variable_declarator(decl);
         self.state.record_mutation();
+    }
+
+    /// Insert or refresh `symbol_id`'s `FunctionSummary`. A summary that
+    /// CHANGES an existing entry records a mutation so the fixed-point loop
+    /// runs another pass: facts upgrade monotonically as passes prune
+    /// references (e.g. dropping `inner(a, u)`'s dead `u` makes the enclosing
+    /// function's own `u` param unused), and an upgrade recorded in an
+    /// otherwise-quiet pass — or after a call site earlier in traversal order
+    /// already read the map — has no consuming pass without this signal. The
+    /// output would then depend on iteration count: a re-run of the whole
+    /// minifier would drop arguments the first run missed (non-idempotent;
+    /// caught by monitor-oxc on vue-router / rollup-pluginutils).
+    ///
+    /// First insertions stay quiet on purpose: a fresh invocation re-derives
+    /// them in pass 1 from the same input, so they are invocation-symmetric
+    /// and forcing a pass would cost every file an extra iteration.
+    pub fn upsert_function_summary(&mut self, symbol_id: SymbolId, summary: FunctionSummary) {
+        match self.state.pure_functions.entry(symbol_id) {
+            Entry::Occupied(mut entry) => {
+                if *entry.get() != summary {
+                    entry.insert(summary);
+                    self.state.record_mutation();
+                }
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(summary);
+            }
+        }
+    }
+
+    /// Remove `symbol_id`'s `FunctionSummary` (a recorder gate failed). Gates
+    /// only fail from the first visit onward — they cannot newly fail mid-run
+    /// (references and side effects only shrink) — so removing an existing
+    /// entry should be unreachable; the mutation signal is a safety net that
+    /// keeps the map's lifecycle idempotency-correct if a future gate breaks
+    /// that monotonicity.
+    pub fn remove_function_summary(&mut self, symbol_id: SymbolId) {
+        if self.state.pure_functions.remove(&symbol_id).is_some() {
+            self.state.record_mutation();
+        }
     }
 }
