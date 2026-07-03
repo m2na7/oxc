@@ -80,6 +80,23 @@ pub struct MinifierState<'a> {
     /// setters that make subsequent property writes side-effectful.
     pub proto_write_symbols: FxHashSet<SymbolId>,
 
+    /// Symbols with a hazardous member-write operation anywhere in the program:
+    /// compound / logical-assignment / update / chained-delete ops, which READ
+    /// the property before writing (so a sibling plain write's value is
+    /// observable); bases of chained member writes (`a` in `a.b.c = 1`, whose
+    /// intermediate object must not be dropped); and writes through
+    /// `__proto__` or non-literal computed keys, which may install setters.
+    /// The DEFAULT-mode drop of write-only property assignments
+    /// (`remove_unused_member_assignment`) must skip these symbols.
+    ///
+    /// Seeded by `Normalize` before the fixed-point loop, so membership is
+    /// execution-order independent (unlike the per-pass `proto_write_symbols`
+    /// used by the `property_write_side_effects: false` opt-in path); extended
+    /// mid-loop when a pass FORMS a new compound assignment
+    /// (`mark_assignment_target_as_read`); never cleared —
+    /// `PeepholeOptimizations::enter_program` deliberately leaves it alone.
+    pub member_write_hazard_symbols: FxHashSet<SymbolId>,
+
     /// One frame per enclosing function body (program root at the bottom).
     /// `(body_scope, body_unsafe)`. While `body_unsafe` is false, the next
     /// `var x = <literal>;` whose declarator sits at `body_scope` is safe to
@@ -123,6 +140,7 @@ impl<'a> MinifierState<'a> {
             symbol_values: SymbolValues::new(scoping.symbols_len()),
             class_symbols_stack: ClassSymbolsStack::new(),
             proto_write_symbols: FxHashSet::default(),
+            member_write_hazard_symbols: FxHashSet::default(),
             body_unsafe_stack: NonEmptyStack::new((scoping.root_scope_id(), false)),
             mutated: false,
             dirty: PassDirty::new(scoping.references_len(), allocator),
