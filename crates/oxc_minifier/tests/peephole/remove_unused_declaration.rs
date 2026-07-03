@@ -1,8 +1,9 @@
 use oxc_span::SourceType;
 
 use crate::{
-    CompressOptions, TreeShakeOptions, test_options, test_options_source_type, test_same_options,
-    test_same_options_source_type, test_same_smallest, test_smallest,
+    CompressOptions, CompressOptionsUnused, TreeShakeOptions, test_options,
+    test_options_source_type, test_same_options, test_same_options_source_type, test_same_smallest,
+    test_smallest,
 };
 
 // Leak regression: dropping an unused declarator must walk the whole
@@ -354,6 +355,121 @@ fn keep_in_script_mode() {
     test_options_source_type("var x = 1; x = 2;", "", SourceType::cjs(), &options);
 
     test_options_source_type("class C {}", "class C {}", source_type, &options);
+}
+
+// #13105: a declaration whose every reference lives inside its own body (or
+// inside the bodies of a cycle it belongs to) can never execute — no live
+// code can reach it, so the whole group is removable. Reference counting
+// alone can't see this: the internal references keep the count above zero.
+#[test]
+fn remove_recursive_unused_function_declaration() {
+    // Self-recursion.
+    test_smallest("function f() { f() }", "");
+    // Side effects inside the dead body never run.
+    test_smallest("function f() { console.log(1); f() }", "");
+    // Mutual recursion.
+    test_smallest("function c() { d() } function d() { c() }", "");
+    // Self-reference as a value.
+    test_smallest("function f() { return f }", "");
+    test_smallest("function f() { g(f) }", "");
+    // The cycle's only external reference is inside dead code.
+    test_smallest("if (false) c(); function c() { d() } function d() { c() }", "");
+}
+
+#[test]
+fn remove_recursive_unused_declarator_and_class() {
+    // const arrow cycle.
+    test_smallest("const a = () => b(); const b = () => a();", "");
+    // var closing over its own binding.
+    test_smallest("var f = function() { f() };", "");
+    // Class cycle with side-effect-free evaluation.
+    test_smallest("class A { m() { new B() } } class B { m() { new A() } }", "");
+    // Mixed function / const arrow / class cycle.
+    test_smallest("function a() { b() } const b = () => { new C() }; class C { m() { a() } }", "");
+}
+
+#[test]
+fn remove_recursive_unused_nested_in_live_function() {
+    // Dead recursion inside a used function: statement-level tree shaking
+    // (rolldown's linker) cannot see inside bodies, so this must be handled
+    // here.
+    test_smallest(
+        "function live() { function inner() { inner() } return 1; } g(live());",
+        "function live() { return 1; } g(live());",
+    );
+}
+
+#[test]
+fn remove_recursive_unused_multi_declarator() {
+    // A dead cycle member sharing a declaration statement with a used
+    // declarator (rolldown's statement-granular shaking keeps the whole
+    // statement).
+    test_smallest(
+        "const a = () => b(), keep = 1; function b() { a() } console.log(keep);",
+        "console.log(1);",
+    );
+}
+
+#[test]
+fn remove_recursive_unused_in_script_function_scope() {
+    // Script mode only protects top-level bindings; recursion dead inside a
+    // kept function is still removable.
+    let options = CompressOptions::smallest();
+    let source_type = SourceType::cjs().with_script(true);
+    test_options_source_type(
+        "function o() { function f() { f() } return 1 } g(o());",
+        "function o() { return 1 } g(o());",
+        source_type,
+        &options,
+    );
+}
+
+#[test]
+fn keep_recursive_function_with_live_references() {
+    // A read from live code roots the cycle.
+    test_same_smallest("function f() { f() } console.log(f);");
+    // A write from live code also roots it (dropping the function would leave
+    // `f = null` assigning to a missing binding).
+    test_same_smallest("function f() { f() } f = null;");
+    // Exports are roots.
+    test_same_smallest("export function f() { f() }");
+    test_same_smallest("function f() { f() } export { f };");
+    test_same_smallest("export default function f() { f() }");
+    // Direct eval in the declaring scope blocks removal.
+    test_same_smallest("function o() { function f() { f() } eval('x') } o();");
+}
+
+#[test]
+fn keep_recursive_cycle_with_side_effectful_evaluation() {
+    // The side-effectful initializer survives, and its reference to `b`
+    // roots the cycle.
+    test_smallest(
+        "const a = (console.log(1), () => b()); const b = () => a();",
+        "const a = (console.log(1), () => b()), b = () => a();",
+    );
+    // Side-effectful heritage keeps the class cycle.
+    test_same_smallest(
+        "class A extends (console.log(1), Object) { m() { new B() } } class B { m() { new A() } }",
+    );
+    // A PURE static value still keeps the class cycle: `remove_unused_class`
+    // extracts every present static value, so removal would not be clean —
+    // the extracted `B` would reference a removed cycle member (see
+    // `classify_class_removability`).
+    test_same_smallest("class A { static x = B; m() { new B() } } class B { m() { new A() } }");
+}
+
+#[test]
+fn keep_recursive_function_in_script_mode_top_level() {
+    let options = CompressOptions::smallest();
+    let source_type = SourceType::cjs().with_script(true);
+    test_same_options_source_type("function f() { f() }", source_type, &options);
+}
+
+#[test]
+fn keep_recursive_function_with_unused_keep_option() {
+    let options =
+        CompressOptions { unused: CompressOptionsUnused::Keep, ..CompressOptions::smallest() };
+    test_same_options("function f() { f() }", &options);
 }
 
 #[test]

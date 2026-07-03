@@ -2,12 +2,22 @@ use super::PeepholeOptimizations;
 use crate::{CompressOptionsUnused, TraverseCtx};
 use oxc_ast::ast::*;
 use oxc_ecmascript::constant_evaluation::{DetermineValueType, ValueType};
+use oxc_syntax::symbol::SymbolId;
 
 impl<'a> PeepholeOptimizations {
     pub(super) fn can_remove_unused_declarators(ctx: &TraverseCtx<'a>) -> bool {
         ctx.state.options.unused != CompressOptionsUnused::Keep
             && !Self::keep_top_level_var_in_script_mode(ctx)
             && !ctx.scoping().root_scope_flags().contains_direct_eval()
+    }
+
+    /// Whether no live code can reach this symbol: either it has no resolved
+    /// references at all, or the liveness analysis proved every remaining
+    /// reference sits inside its own dead declaration cycle (#13105). NOT
+    /// "removable" — the removal sites apply their own gates (script mode,
+    /// direct eval, init shape) on top of this.
+    fn symbol_has_no_live_references(symbol_id: SymbolId, ctx: &TraverseCtx<'a>) -> bool {
+        ctx.scoping().symbol_is_unused(symbol_id) || ctx.state.symbol_is_dead(symbol_id)
     }
 
     fn is_sync_iterator_expr(expr: &Expression<'a>, ctx: &TraverseCtx<'a>) -> bool {
@@ -44,7 +54,7 @@ impl<'a> PeepholeOptimizations {
         match &decl.id {
             BindingPattern::BindingIdentifier(ident) => {
                 if let Some(symbol_id) = ident.symbol_id.get() {
-                    return ctx.scoping().symbol_is_unused(symbol_id);
+                    return Self::symbol_has_no_live_references(symbol_id, ctx);
                 }
                 false
             }
@@ -112,7 +122,7 @@ impl<'a> PeepholeOptimizations {
         {
             return;
         }
-        if !ctx.scoping().symbol_is_unused(symbol_id) {
+        if !Self::symbol_has_no_live_references(symbol_id, ctx) {
             return;
         }
         let new_stmt = Statement::new_empty_statement(f.span, ctx);
@@ -131,10 +141,21 @@ impl<'a> PeepholeOptimizations {
         {
             return;
         }
-        if !ctx.scoping().symbol_is_unused(symbol_id) {
+        if !Self::symbol_has_no_live_references(symbol_id, ctx) {
             return;
         }
         if let Some(changed) = Self::remove_unused_class(c, ctx).map(|exprs| {
+            // Liveness candidacy requires `RemovesClean` (see
+            // `classify_class_removability`), so a dead-CYCLE class must
+            // extract nothing — extracted expressions would promote
+            // references to removed cycle members into live code.
+            #[cfg(debug_assertions)]
+            if ctx.state.symbol_is_dead(symbol_id) {
+                debug_assert!(
+                    exprs.is_empty(),
+                    "dead-cycle class removal must not extract expressions"
+                );
+            }
             if exprs.is_empty() {
                 Statement::new_empty_statement(c.span, ctx)
             } else {

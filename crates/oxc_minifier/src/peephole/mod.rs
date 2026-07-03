@@ -34,6 +34,7 @@ use crate::{
 };
 
 pub use self::normalize::{Normalize, NormalizeOptions};
+pub use self::remove_unused_expression::ClassRemovability;
 
 /// Stateless peephole optimizer. The `dce` flag, the `mutated` signal, and
 /// the per-pass `PassDirty` accumulator all live on `MinifierState`.
@@ -398,7 +399,10 @@ impl<'a> PeepholeOptimizations {
     /// fixed-point loop starts against already-pruned scoping and
     /// Normalize's drops cost no extra peephole pass) and after every
     /// peephole pass.
-    pub(crate) fn flush_pass_dirty(program: &Program<'a>, ctx: &mut TraverseCtx<'a>) {
+    ///
+    /// Returns whether the driver must recompute the symbol-liveness
+    /// analysis — see `symbol_liveness::recompute_trigger` (#13105).
+    pub(crate) fn flush_pass_dirty(program: &Program<'a>, ctx: &mut TraverseCtx<'a>) -> bool {
         let had_dead = !ctx.state.dirty.dead_refs.is_empty();
 
         // (1) Resolved references — direct consumption, no walk.
@@ -415,6 +419,12 @@ impl<'a> PeepholeOptimizations {
                 .scoping_mut()
                 .retain_resolved_references_excluding(&ctx.state.dirty.dead_refs);
         }
+        let recompute_liveness = crate::symbol_liveness::recompute_trigger(
+            ctx.scoping(),
+            &ctx.state.options,
+            &ctx.state.dirty.dead_refs,
+            ctx.state.dirty.eval_dropped,
+        );
 
         // (2) Direct-eval — gated full walk only when an eval was dropped.
         if ctx.state.dirty.eval_dropped {
@@ -443,6 +453,8 @@ impl<'a> PeepholeOptimizations {
             ctx.state.dirty.dead_refs = BitSet::new_in(refs_len, ctx.allocator());
         }
         ctx.state.dirty.eval_dropped = false;
+
+        recompute_liveness
     }
 }
 

@@ -906,40 +906,11 @@ impl<'a> PeepholeOptimizations {
         c: &mut Class<'a>,
         ctx: &mut TraverseCtx<'a>,
     ) -> Option<ArenaVec<'a, Expression<'a>>> {
-        // TypeError `class C extends (() => {}) {}`
-        if c.super_class
-            .as_ref()
-            .is_some_and(|e| matches!(e, Expression::ArrowFunctionExpression(_)))
-        {
+        if matches!(Self::classify_class_removability(c, &*ctx), ClassRemovability::Keep) {
             return None;
-        }
-        // Don't remove classes with decorators - they may have side effects
-        if !c.decorators.is_empty() {
-            return None;
-        }
-        // Keep the entire class if there are class level side effects.
-        for e in &c.body.body {
-            match e {
-                e if e.has_decorator() => return None,
-                ClassElement::TSIndexSignature(_) => return None,
-                ClassElement::StaticBlock(block) if !block.body.is_empty() => return None,
-                ClassElement::PropertyDefinition(prop)
-                    if prop.r#static
-                        && prop.value.as_ref().is_some_and(|v| v.may_have_side_effects(ctx)) =>
-                {
-                    return None;
-                }
-                ClassElement::AccessorProperty(prop)
-                    if prop.r#static
-                        && prop.value.as_ref().is_some_and(|v| v.may_have_side_effects(ctx)) =>
-                {
-                    return None;
-                }
-                _ => {}
-            }
         }
 
-        // Otherwise extract the expressions.
+        // Extract the evaluation-time expressions.
         let mut exprs = ArenaVec::new_in(ctx);
 
         if let Some(e) = &mut c.super_class
@@ -980,4 +951,109 @@ impl<'a> PeepholeOptimizations {
         ctx.notice_change();
         Some(exprs)
     }
+
+    /// How `remove_unused_class` treats an unused class. The classifier is
+    /// the single source of truth for its bail-outs; the extraction loop in
+    /// `remove_unused_class` and the candidacy check in `symbol_liveness`
+    /// (which needs `RemovesClean`: dead-cycle classes must not promote
+    /// references into live code) both key off it.
+    pub(crate) fn classify_class_removability(
+        c: &Class<'a>,
+        ctx: &impl MayHaveSideEffectsContext<'a>,
+    ) -> ClassRemovability {
+        // Don't remove classes with decorators - they may have side effects.
+        if !c.decorators.is_empty() {
+            return ClassRemovability::Keep;
+        }
+        // TypeError `class C extends (() => {}) {}`
+        if c.super_class
+            .as_ref()
+            .is_some_and(|e| matches!(e, Expression::ArrowFunctionExpression(_)))
+        {
+            return ClassRemovability::Keep;
+        }
+        let mut extracts = false;
+        for e in &c.body.body {
+            // Cheap structural bail-outs first; purity walks after.
+            if e.has_decorator() {
+                return ClassRemovability::Keep;
+            }
+            match e {
+                ClassElement::TSIndexSignature(_) => return ClassRemovability::Keep,
+                ClassElement::StaticBlock(block) if !block.body.is_empty() => {
+                    return ClassRemovability::Keep;
+                }
+                _ => {}
+            }
+            if e.r#static() {
+                let value = match e {
+                    ClassElement::PropertyDefinition(prop) => prop.value.as_ref(),
+                    ClassElement::AccessorProperty(prop) => prop.value.as_ref(),
+                    _ => None,
+                };
+                if let Some(value) = value {
+                    if value.may_have_side_effects(ctx) {
+                        return ClassRemovability::Keep;
+                    }
+                    // Every PRESENT static value is extracted, pure or not.
+                    extracts = true;
+                }
+            }
+            if e.computed()
+                && let Some(key) = match e {
+                    ClassElement::TSIndexSignature(_) | ClassElement::StaticBlock(_) => None,
+                    ClassElement::MethodDefinition(def) => Some(&def.key),
+                    ClassElement::PropertyDefinition(def) => Some(&def.key),
+                    ClassElement::AccessorProperty(def) => Some(&def.key),
+                }
+                && let Some(expr) = key.as_expression()
+                && expr.may_have_side_effects(ctx)
+            {
+                extracts = true;
+            }
+        }
+        if c.super_class.as_ref().is_some_and(|e| e.may_have_side_effects(ctx)) {
+            extracts = true;
+        }
+        if extracts { ClassRemovability::Extracts } else { ClassRemovability::RemovesClean }
+    }
+
+    /// Expression kinds the `remove_unused_expression` dispatch above sends
+    /// to a specialized handler, which may REDUCE the expression (leaving
+    /// residue) instead of dropping it whole. Keep this list in sync with
+    /// the dispatch arms — the symbol-liveness analysis relies on every
+    /// other pure expression being dropped without residue by the `_`
+    /// fallthrough (`ThisExpression` counts as specialized: its removal
+    /// depends on traversal position).
+    pub(crate) fn expr_has_specialized_unused_handler(e: &Expression<'a>) -> bool {
+        matches!(
+            e,
+            Expression::ArrayExpression(_)
+                | Expression::AssignmentExpression(_)
+                | Expression::BinaryExpression(_)
+                | Expression::CallExpression(_)
+                | Expression::ClassExpression(_)
+                | Expression::ConditionalExpression(_)
+                | Expression::LogicalExpression(_)
+                | Expression::NewExpression(_)
+                | Expression::ObjectExpression(_)
+                | Expression::SequenceExpression(_)
+                | Expression::TemplateLiteral(_)
+                | Expression::UnaryExpression(_)
+                | Expression::ThisExpression(_)
+        )
+    }
+}
+
+/// See [`PeepholeOptimizations::classify_class_removability`].
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ClassRemovability {
+    /// Removal must bail (`remove_unused_class` returns `None`).
+    Keep,
+    /// Removable, but evaluation-time expressions (side-effectful heritage
+    /// or computed keys, any present static value) are extracted into the
+    /// surrounding code.
+    Extracts,
+    /// Removable with nothing extracted.
+    RemovesClean,
 }

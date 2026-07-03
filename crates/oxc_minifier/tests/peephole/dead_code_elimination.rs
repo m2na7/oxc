@@ -718,3 +718,14 @@ fn dce_drop_dead_args_issue_repro() {
         "const foo = async (assets) => ({}); export default await foo()",
     );
 }
+
+// #13105: dead recursive/cyclic declarations must also drop in dce-only mode
+// (rolldown's per-module treeshake preprocess).
+#[test]
+fn dce_recursive_unused_functions() {
+    test("function f() { f() }", "");
+    test("function c() { d() } function d() { c() }", "");
+    // Live references root the cycle.
+    test_same("function f() {\n\tf();\n}\nconsole.log(f);");
+    test_same("export function f() {\n\tf();\n}");
+}

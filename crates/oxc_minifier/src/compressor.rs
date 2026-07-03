@@ -1,11 +1,12 @@
-use oxc_allocator::Allocator;
+use oxc_allocator::{Allocator, GetAllocator};
 use oxc_ast::ast::*;
 use oxc_semantic::{Scoping, SemanticBuilder};
 
 use crate::{
-    CompressOptions, ReusableTraverseCtx,
+    CompressOptions, ReusableTraverseCtx, TraverseCtx,
     peephole::{Normalize, NormalizeOptions, PeepholeOptimizations},
     state::MinifierState,
+    symbol_liveness,
 };
 
 pub struct Compressor<'a> {
@@ -119,6 +120,11 @@ impl<'a> Compressor<'a> {
         // drop_console), so pass 1 already observes the pruned reference
         // counts and Normalize's drops cost no extra peephole pass.
         PeepholeOptimizations::flush_pass_dirty(program, ctx.get_mut());
+        // Initial liveness: reference cycles that are dead in the source
+        // (`function f() { f() }`) must be visible to pass 1. Later
+        // iterations recompute only when a flush reports a transition that
+        // can newly kill a cycle (see `flush_pass_dirty`).
+        Self::update_dead_symbols(program, ctx.get_mut());
         // Start the loop from a clean signal: Normalize's drops are flushed
         // above, so a Normalize-only mutation must not force a pointless
         // extra iteration.
@@ -131,7 +137,9 @@ impl<'a> Compressor<'a> {
             if !ctx.state_mut().take_mutated() {
                 break;
             }
-            PeepholeOptimizations::flush_pass_dirty(program, ctx.get_mut());
+            if PeepholeOptimizations::flush_pass_dirty(program, ctx.get_mut()) {
+                Self::update_dead_symbols(program, ctx.get_mut());
+            }
             if let Some(max) = max_iterations {
                 if iteration >= max {
                     break;
@@ -149,5 +157,18 @@ impl<'a> Compressor<'a> {
             initial_references_len,
         );
         iteration
+    }
+
+    /// Recompute the whole-program symbol-liveness set consumed by the
+    /// unused-declaration removal sites (#13105). Must run against
+    /// freshly-flushed scoping.
+    fn update_dead_symbols(program: &Program<'a>, ctx: &mut TraverseCtx<'a>) {
+        let dead = symbol_liveness::compute_dead_symbols(
+            program,
+            ctx.scoping(),
+            &ctx.state.options,
+            ctx.allocator(),
+        );
+        ctx.state.dead_symbols = dead;
     }
 }
