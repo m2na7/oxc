@@ -2,7 +2,7 @@ commit: 1fb0b771
 
 semantic_babel Summary:
 AST Parsed     : 2236/2236 (100.00%)
-Positive Passed: 2128/2236 (95.17%)
+Positive Passed: 2153/2236 (96.29%)
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/comments/decorators/decorators-after-export/input.js
 Symbol span mismatch for "C":
 after transform: SymbolId(0): Span { start: 65, end: 66 }
@@ -83,35 +83,10 @@ Symbol flags mismatch for "A":
 after transform: SymbolId(0): SymbolFlags(RegularEnum)
 rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/estree/typescript/loc-index-property/input.js
-Bindings mismatch:
-after transform: ScopeId(0): ["AssertsFoo", "Foo", "_defineProperty"]
-rebuilt        : ScopeId(0): ["AssertsFoo", "_defineProperty"]
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/assert-predicate/asserts-as-identifier/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["assertIsString"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/assert-predicate/asserts-var/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["assertIsString"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/assert-predicate/declare-asserts-var-with-predicate/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["assertIsString"]
-rebuilt        : ScopeId(0): []
-
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/cast/for-of-lhs/input.ts
 Reference flags mismatch for "a":
 after transform: ReferenceId(3): ReferenceFlags(Read)
 rebuilt        : ReferenceId(1): ReferenceFlags(Write)
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/class/abstract/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["C1", "C2", "C3", "C4", "C5"]
-rebuilt        : ScopeId(0): ["C1", "C3", "C4", "C5"]
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/class/constructor-with-modifier-names/input.ts
 Multiple constructor implementations are not allowed.
@@ -123,11 +98,6 @@ semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescr
 Unresolved references mismatch:
 after transform: ["a"]
 rebuilt        : []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/class/get-generic/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["C"]
-rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/class/members-with-modifier-names/input.ts
 Function implementation is missing or not immediately following the declaration.
@@ -176,39 +146,9 @@ Bindings mismatch:
 after transform: ScopeId(0): ["N"]
 rebuilt        : ScopeId(0): []
 
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/declare/const/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["x", "y"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/declare/destructure/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["x", "y"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/declare/eval/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["arguments", "eval"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/declare/function-rest-trailing-comma/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["foo"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/declare/let/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["x"]
-rebuilt        : ScopeId(0): []
-
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/declare/valid-namespace-var/input.ts
 Bindings mismatch:
 after transform: ScopeId(0): ["valid_namespace_var"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/declare/var/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["x"]
 rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/decorators/type-arguments/input.ts
@@ -223,21 +163,6 @@ semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescr
 Symbol flags mismatch for "E":
 after transform: SymbolId(0): SymbolFlags(ConstEnum)
 rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/enum/declare/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["E"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/enum/declare-const/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["E"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/enum/declare-new-line/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["E"]
-rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/enum/enum-as-or-satisfies-brackets/input.ts
 Symbol flags mismatch for "as":
@@ -256,11 +181,6 @@ semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescr
 Symbol flags mismatch for "E":
 after transform: SymbolId(0): SymbolFlags(ConstEnum)
 rebuilt        : SymbolId(0): SymbolFlags(BlockScopedVariable)
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/enum/export-declare-const/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["E"]
-rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/enum/members/input.ts
 Bindings mismatch:
@@ -302,11 +222,6 @@ Symbol flags mismatch for "E":
 after transform: SymbolId(0): SymbolFlags(RegularEnum)
 rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/export/declare/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["C", "N", "_bar", "bar", "f", "foo", "x"]
-rebuilt        : ScopeId(0): []
-
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/export/equals/input.ts
 Reference flags mismatch for "f":
 after transform: ReferenceId(0): ReferenceFlags(Read | Type)
@@ -316,11 +231,6 @@ semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescr
 Reference flags mismatch for "f":
 after transform: ReferenceId(0): ReferenceFlags(Read | Type)
 rebuilt        : ReferenceId(1): ReferenceFlags(Read)
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/export/export-type-declaration/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["a", "b"]
-rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/export/export-value-declaration/input.ts
 Bindings mismatch:
@@ -337,11 +247,6 @@ rebuilt        : SymbolId(1): SymbolFlags(BlockScopedVariable)
 Symbol span mismatch for "N":
 after transform: SymbolId(1): Span { start: 37, end: 38 }
 rebuilt        : SymbolId(1): Span { start: 0, end: 0 }
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/function/declare/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["f"]
-rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/function/declare-pattern-parameters/input.ts
 A required parameter cannot follow an optional parameter.
@@ -447,36 +352,10 @@ Symbol flags mismatch for "E":
 after transform: SymbolId(1): SymbolFlags(RegularEnum)
 rebuilt        : SymbolId(0): SymbolFlags(BlockScopedVariable)
 
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/callable-class/input.ts
-Symbol flags mismatch for "C":
-after transform: SymbolId(0): SymbolFlags(Class | Function | Ambient)
-rebuilt        : SymbolId(0): SymbolFlags(Function)
-Symbol span mismatch for "C":
-after transform: SymbolId(0): Span { start: 14, end: 15 }
-rebuilt        : SymbolId(0): Span { start: 29, end: 30 }
-Symbol redeclarations mismatch for "C":
-after transform: SymbolId(0): [Span { start: 14, end: 15 }, Span { start: 29, end: 30 }]
-rebuilt        : SymbolId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/callable-class-ambient/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["C"]
-rebuilt        : ScopeId(0): []
-
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/enum-block-scoped/input.ts
 Symbol flags mismatch for "Foo":
 after transform: SymbolId(0): SymbolFlags(RegularEnum)
 rebuilt        : SymbolId(0): SymbolFlags(BlockScopedVariable)
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/export-declare-function-after/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["foo"]
-rebuilt        : ScopeId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/export-declare-function-before/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["foo"]
-rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/export-enum-after/input.ts
 Symbol flags mismatch for "Test":
@@ -509,16 +388,8 @@ Symbol redeclarations mismatch for "f":
 after transform: SymbolId(0): [Span { start: 9, end: 10 }, Span { start: 32, end: 33 }]
 rebuilt        : SymbolId(0): []
 
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/namespace-declaration-var/input.js
-Bindings mismatch:
-after transform: ScopeId(0): ["foo"]
-rebuilt        : ScopeId(0): []
-
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/namespace-declaration-var-2/input.js
 Namespaces exporting non-const are not supported by Oxc. Change to const or see: https://oxc.rs/docs/guide/usage/transformer/typescript.html#partial-namespace-support
-Bindings mismatch:
-after transform: ScopeId(0): ["bar", "foo"]
-rebuilt        : ScopeId(0): ["bar"]
 Symbol flags mismatch for "bar":
 after transform: SymbolId(1): SymbolFlags(ValueModule)
 rebuilt        : SymbolId(0): SymbolFlags(BlockScopedVariable)
@@ -585,11 +456,6 @@ rebuilt        : SymbolId(0): SymbolFlags(Function)
 Symbol redeclarations mismatch for "A":
 after transform: SymbolId(0): [Span { start: 9, end: 10 }, Span { start: 21, end: 22 }]
 rebuilt        : SymbolId(0): []
-
-semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/redeclaration-import-ambient-class/input.ts
-Bindings mismatch:
-after transform: ScopeId(0): ["Something"]
-rebuilt        : ScopeId(0): []
 
 semantic Error: tasks/coverage/babel/packages/babel-parser/test/fixtures/typescript/scope/redeclaration-import-equals-var/input.ts
 Bindings mismatch:
