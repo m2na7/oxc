@@ -34,13 +34,13 @@ fn tsc_compilation(command: &TypeCheckCommand) -> ExitCode {
         }
     };
 
-    let root_files = match resolve_config_file(command, &cwd) {
-        // A resolved config file: parse it (resolving `extends`) via `oxc_resolver`, then expand
-        // its file globs into the root file list.
+    let (root_files, tsconfig_path) = match resolve_config_file(command, &cwd) {
+        // A resolved config file: parse it (resolving `extends`) via `oxc_resolver`, expand its
+        // file globs into the root file list, and keep the config path to drive module resolution.
         Ok(Some(config_file)) => match parse_config_file(&config_file) {
             Ok(tsconfig) => {
                 println!("project: {}", config_file.display());
-                get_file_names(&tsconfig)
+                (get_file_names(&tsconfig), Some(config_file))
             }
             Err(message) => {
                 eprintln!("{message}");
@@ -48,17 +48,17 @@ fn tsc_compilation(command: &TypeCheckCommand) -> ExitCode {
             }
         },
         // Source files given without a config file: use them directly as roots.
-        Ok(None) => command.files.clone(),
+        Ok(None) => (command.files.clone(), None),
         Err(message) => {
             eprintln!("{message}");
             return ExitCode::FAILURE;
         }
     };
 
-    // Collect the root files (normalized + deduplicated) into the program's file list.
-    let program = Program::new(&cwd, &root_files);
+    // Parse the roots, follow their imports to load every dependent file, and collect them.
+    let program = Program::new(&cwd, &root_files, tsconfig_path.as_deref());
     for file in program.files() {
-        println!("  {}", file.display());
+        println!("  {}", file.file_name().display());
     }
     println!("({} files)", program.len());
     ExitCode::SUCCESS

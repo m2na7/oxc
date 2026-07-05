@@ -2648,7 +2648,11 @@ dependencies = [
  "oxc_resolver",
  "oxc_semantic",
  "oxc_span",
+ "oxc_str",
+ "oxc_syntax",
+ "rayon",
  "rustc-hash",
+ "self_cell",
 ]
 
 [[package]]
