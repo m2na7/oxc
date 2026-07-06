@@ -1166,17 +1166,11 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/const/input.ts
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(ConstEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/constant-folding/input.ts
 Bindings mismatch:
@@ -1185,9 +1179,6 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/enum-merging-inner-references/input.ts
 Bindings mismatch:
@@ -1202,9 +1193,6 @@ rebuilt        : ScopeId(2): ["Animals"]
 Scope flags mismatch:
 after transform: ScopeId(2): ScopeFlags(0x0)
 rebuilt        : ScopeId(2): ScopeFlags(Function)
-Symbol flags mismatch for "Animals":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 Symbol redeclarations mismatch for "Animals":
 after transform: SymbolId(0): [Span { start: 5, end: 12 }, Span { start: 41, end: 48 }]
 rebuilt        : SymbolId(0): []
@@ -1237,9 +1225,6 @@ rebuilt        : SymbolId(0): []
 Symbol reference IDs mismatch for "Dog":
 after transform: SymbolId(1): [ReferenceId(1)]
 rebuilt        : SymbolId(1): []
-Symbol flags mismatch for "Animals":
-after transform: SymbolId(2): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(2): SymbolFlags(FunctionScopedVariable)
 Symbol redeclarations mismatch for "Animals":
 after transform: SymbolId(2): [Span { start: 38, end: 45 }, Span { start: 65, end: 72 }, Span { start: 92, end: 99 }]
 rebuilt        : SymbolId(2): []
@@ -1257,9 +1242,6 @@ rebuilt        : ScopeId(2): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(2): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(2): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(BlockScopedVariable)
 Symbol redeclarations mismatch for "E":
 after transform: SymbolId(0): [Span { start: 12, end: 13 }, Span { start: 40, end: 41 }]
 rebuilt        : SymbolId(0): []
@@ -1271,9 +1253,6 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/inner-references/input.ts
 Bindings mismatch:
@@ -1282,9 +1261,6 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/mix-references/input.ts
 x Output mismatch
@@ -1298,9 +1274,6 @@ rebuilt        : ScopeId(1): ["Foo"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "Foo":
-after transform: SymbolId(1): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(1): SymbolFlags(FunctionScopedVariable)
 Symbol reference IDs mismatch for "Foo":
 after transform: SymbolId(7): [ReferenceId(4), ReferenceId(5), ReferenceId(6), ReferenceId(7), ReferenceId(8), ReferenceId(9), ReferenceId(10), ReferenceId(11), ReferenceId(12)]
 rebuilt        : SymbolId(2): [ReferenceId(0), ReferenceId(1), ReferenceId(3), ReferenceId(4), ReferenceId(5), ReferenceId(6), ReferenceId(7), ReferenceId(8), ReferenceId(9), ReferenceId(10), ReferenceId(12)]
@@ -1312,9 +1285,6 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/non-scoped/input.ts
 Bindings mismatch:
@@ -1329,9 +1299,6 @@ rebuilt        : ScopeId(2): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(2): ScopeFlags(0x0)
 rebuilt        : ScopeId(2): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 Symbol redeclarations mismatch for "E":
 after transform: SymbolId(0): [Span { start: 5, end: 6 }, Span { start: 40, end: 41 }]
 rebuilt        : SymbolId(0): []
@@ -1349,15 +1316,9 @@ rebuilt        : ScopeId(2): ["constants"]
 Scope flags mismatch:
 after transform: ScopeId(2): ScopeFlags(0x0)
 rebuilt        : ScopeId(2): ScopeFlags(Function)
-Symbol flags mismatch for "socketType":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 Symbol reference IDs mismatch for "socketType":
 after transform: SymbolId(0): [ReferenceId(0), ReferenceId(1), ReferenceId(2), ReferenceId(10)]
 rebuilt        : SymbolId(0): [ReferenceId(7)]
-Symbol flags mismatch for "constants":
-after transform: SymbolId(4): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(2): SymbolFlags(FunctionScopedVariable)
 
 * enum/reverse-mappings-syntactically-determinable/input.ts
 x Output mismatch
@@ -1366,9 +1327,6 @@ x Output mismatch
 Scope flags mismatch:
 after transform: ScopeId(2): ScopeFlags(0x0)
 rebuilt        : ScopeId(2): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(BlockScopedVariable)
 
 * enum/string-value/input.ts
 Bindings mismatch:
@@ -1377,9 +1335,6 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/string-value-template/input.ts
 Bindings mismatch:
@@ -1388,9 +1343,6 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/string-values-computed/input.ts
 Bindings mismatch:
@@ -1399,9 +1351,6 @@ rebuilt        : ScopeId(1): ["E"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "E":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * enum/ts5.0-const-foldable/input.ts
 x Output mismatch
@@ -1450,23 +1399,14 @@ rebuilt        : ScopeId(3): ScopeFlags(StrictMode | Function)
 Scope flags mismatch:
 after transform: ScopeId(15): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(4): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "BB":
-after transform: SymbolId(10): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(1): SymbolFlags(FunctionScopedVariable)
 Symbol redeclarations mismatch for "BB":
 after transform: SymbolId(10): [Span { start: 445, end: 447 }, Span { start: 461, end: 463 }]
 rebuilt        : SymbolId(1): []
-Symbol flags mismatch for "BB2":
-after transform: SymbolId(15): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(4): SymbolFlags(FunctionScopedVariable)
 
 * exports/export-const-enums/input.ts
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(1): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "None":
-after transform: SymbolId(0): SymbolFlags(ConstEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * exports/interface/input.ts
 x Output mismatch
@@ -1494,9 +1434,6 @@ rebuilt        : ScopeId(1): ["Enum"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(1): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "Enum":
-after transform: SymbolId(1): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * imports/enum-value/input.ts
 Bindings mismatch:
@@ -1505,9 +1442,6 @@ rebuilt        : ScopeId(1): ["Enum"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(1): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "Enum":
-after transform: SymbolId(1): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(1): SymbolFlags(FunctionScopedVariable)
 
 * imports/type-only-export-specifier-2/input.ts
 x Output mismatch
@@ -1535,9 +1469,6 @@ rebuilt        : ScopeId(1): ["A"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(1): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "A":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 Symbol redeclarations mismatch for "A":
 after transform: SymbolId(0): [Span { start: 5, end: 6 }, Span { start: 30, end: 31 }]
 rebuilt        : SymbolId(0): []
@@ -1568,9 +1499,6 @@ rebuilt        : ScopeId(9): ScopeFlags(StrictMode | Function)
 Symbol reference IDs mismatch for "a":
 after transform: SymbolId(0): [ReferenceId(0), ReferenceId(4), ReferenceId(5)]
 rebuilt        : SymbolId(0): [ReferenceId(2), ReferenceId(3)]
-Symbol flags mismatch for "B":
-after transform: SymbolId(19): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(16): SymbolFlags(BlockScopedVariable)
 
 * namespace/export-type-only/input.ts
 Bindings mismatch:
@@ -1628,15 +1556,9 @@ rebuilt        : SymbolId(6): []
 Symbol redeclarations mismatch for "D":
 after transform: SymbolId(6): [Span { start: 181, end: 182 }, Span { start: 207, end: 208 }]
 rebuilt        : SymbolId(9): []
-Symbol flags mismatch for "H":
-after transform: SymbolId(8): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(12): SymbolFlags(BlockScopedVariable)
 Symbol redeclarations mismatch for "F":
 after transform: SymbolId(12): [Span { start: 308, end: 309 }, Span { start: 325, end: 326 }]
 rebuilt        : SymbolId(14): []
-Symbol flags mismatch for "L":
-after transform: SymbolId(16): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(20): SymbolFlags(BlockScopedVariable)
 
 * namespace/nested-namespace/input.ts
 Bindings mismatch:
@@ -1648,9 +1570,6 @@ rebuilt        : ScopeId(2): ["G"]
 Scope flags mismatch:
 after transform: ScopeId(4): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(2): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "G":
-after transform: SymbolId(3): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(2): SymbolFlags(BlockScopedVariable)
 
 * namespace/same-name/input.ts
 Scope flags mismatch:
@@ -1659,9 +1578,6 @@ rebuilt        : ScopeId(8): ScopeFlags(StrictMode | Function)
 Symbol redeclarations mismatch for "N":
 after transform: SymbolId(3): [Span { start: 59, end: 60 }, Span { start: 115, end: 116 }, Span { start: 166, end: 167 }]
 rebuilt        : SymbolId(5): []
-Symbol flags mismatch for "_N":
-after transform: SymbolId(6): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(11): SymbolFlags(BlockScopedVariable)
 
 * optimize-const-enums/custom-values-exported/input.ts
 x Output mismatch
@@ -1690,9 +1606,6 @@ rebuilt        : ScopeId(1): ["A"]
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(1): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "A":
-after transform: SymbolId(0): SymbolFlags(ConstEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
 * optimize-const-enums/merged/input.ts
 Bindings mismatch:
@@ -1707,9 +1620,6 @@ rebuilt        : ScopeId(2): ["A"]
 Scope flags mismatch:
 after transform: ScopeId(2): ScopeFlags(StrictMode)
 rebuilt        : ScopeId(2): ScopeFlags(StrictMode | Function)
-Symbol flags mismatch for "A":
-after transform: SymbolId(0): SymbolFlags(ConstEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 Symbol redeclarations mismatch for "A":
 after transform: SymbolId(0): [Span { start: 11, end: 12 }, Span { start: 36, end: 37 }]
 rebuilt        : SymbolId(0): []

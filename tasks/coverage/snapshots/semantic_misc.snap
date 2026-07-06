@@ -139,36 +139,9 @@ rebuilt        : ScopeId(8): ["H"]
 Scope flags mismatch:
 after transform: ScopeId(8): ScopeFlags(0x0)
 rebuilt        : ScopeId(8): ScopeFlags(Function)
-Symbol flags mismatch for "A":
-after transform: SymbolId(0): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
-Symbol flags mismatch for "B":
-after transform: SymbolId(2): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(2): SymbolFlags(FunctionScopedVariable)
-Symbol flags mismatch for "C":
-after transform: SymbolId(4): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(4): SymbolFlags(FunctionScopedVariable)
-Symbol flags mismatch for "D":
-after transform: SymbolId(6): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(6): SymbolFlags(FunctionScopedVariable)
-Symbol flags mismatch for "E":
-after transform: SymbolId(8): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(8): SymbolFlags(FunctionScopedVariable)
-Symbol flags mismatch for "F":
-after transform: SymbolId(10): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(10): SymbolFlags(FunctionScopedVariable)
-Symbol flags mismatch for "G":
-after transform: SymbolId(12): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(12): SymbolFlags(FunctionScopedVariable)
-Symbol flags mismatch for "H":
-after transform: SymbolId(14): SymbolFlags(RegularEnum)
-rebuilt        : SymbolId(14): SymbolFlags(FunctionScopedVariable)
 
 semantic Error: tasks/coverage/misc/pass/oxc-8193.ts
 Scope flags mismatch:
 after transform: ScopeId(1): ScopeFlags(0x0)
 rebuilt        : ScopeId(1): ScopeFlags(Function)
-Symbol flags mismatch for "A":
-after transform: SymbolId(0): SymbolFlags(ConstEnum)
-rebuilt        : SymbolId(0): SymbolFlags(FunctionScopedVariable)
 
