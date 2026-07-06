@@ -1,8 +1,12 @@
 //! Port of typescript-go's `internal/compiler/program.go`.
 
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use oxc_index::{IndexSlice, define_nonmax_u32_index_type};
+use oxc_resolver::TsConfig;
 
 use super::{
     fileloader::{FileLoader, ProcessedFiles},
@@ -18,6 +22,22 @@ define_nonmax_u32_index_type! {
     pub struct FileId;
 }
 
+/// The inputs a [`Program`] is created from, mirroring tsgo's `ProgramOptions`.
+///
+/// tsgo's `Host` is created internally from `current_directory`; `config` stands in for tsgo's
+/// `Config` when a tsconfig drives the compilation.
+#[derive(Debug)]
+pub struct ProgramOptions {
+    /// The directory relative paths resolve against (tsgo `Host.GetCurrentDirectory`).
+    pub current_directory: PathBuf,
+    /// The root files to load (tsgo `Config.FileNames()`).
+    pub root_files: Vec<PathBuf>,
+    /// The parsed project tsconfig (tsgo `Config`), driving module resolution
+    /// (`paths`/`baseUrl`) and the compiler-option gates. `None` when files are compiled
+    /// directly without a config file.
+    pub config: Option<Arc<TsConfig>>,
+}
+
 /// A program: the source files loaded from a set of root files (roots + their transitive imports).
 /// Mirrors tsgo's `Program` (which embeds `processedFiles`).
 ///
@@ -25,24 +45,25 @@ define_nonmax_u32_index_type! {
 /// record) but not yet bound; type checking is a later step.
 #[derive(Debug)]
 pub struct Program {
+    opts: ProgramOptions,
     processed: ProcessedFiles,
 }
 
 impl Program {
-    /// Port of tsgo's `NewProgram`: parse `root_files`, follow their imports to load every
-    /// dependent file (in parallel), and collect them. Relative paths resolve against
-    /// `current_directory`; `tsconfig` (when present) drives module resolution (`paths`/`baseUrl`).
-    pub fn new(current_directory: &Path, root_files: &[PathBuf], tsconfig: Option<&Path>) -> Self {
-        Self {
-            processed: FileLoader::process_all_program_files(
-                current_directory,
-                root_files,
-                tsconfig,
-            ),
-        }
+    /// Port of tsgo's `NewProgram`: parse the root files, follow their imports to load every
+    /// dependent file (in parallel), and collect them.
+    pub fn new(opts: ProgramOptions) -> Self {
+        let processed = FileLoader::process_all_program_files(&opts);
+        Self { opts, processed }
     }
 
-    /// All source files, in deterministic order (tsgo `Program.SourceFiles`).
+    /// The options the program was created from (tsgo `Program.Options`).
+    pub fn options(&self) -> &ProgramOptions {
+        &self.opts
+    }
+
+    /// All source files in program order — a post-order walk of the import graph from the root
+    /// files, so dependencies come before their importers (tsgo `Program.SourceFiles`).
     pub fn files(&self) -> &IndexSlice<FileId, [SourceFile]> {
         &self.processed.files
     }
@@ -58,7 +79,14 @@ impl Program {
         self.processed.files_by_path.get(path).copied()
     }
 
-    /// Paths that could not be read (tsgo `missingFiles`).
+    /// The file `specifier` resolves to from within `id`, if it was loaded (tsgo
+    /// `Program.GetResolvedModule`).
+    pub fn resolved_module(&self, id: FileId, specifier: &str) -> Option<FileId> {
+        self.processed.resolved_modules[id].get(specifier).copied()
+    }
+
+    /// Paths that could not be loaded — unreadable files and files with unsupported extensions
+    /// (tsgo `missingFiles`).
     pub fn missing_files(&self) -> &[PathBuf] {
         &self.processed.missing_files
     }

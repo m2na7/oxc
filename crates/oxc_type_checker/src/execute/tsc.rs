@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-    compiler::Program,
+    compiler::{Program, ProgramOptions},
     tsoptions::{TypeCheckCommand, get_file_names, parse_command_line, parse_config_file},
     tspath::to_path,
 };
@@ -34,13 +34,14 @@ fn tsc_compilation(command: &TypeCheckCommand) -> ExitCode {
         }
     };
 
-    let (root_files, tsconfig_path) = match resolve_config_file(command, &cwd) {
+    let (root_files, config) = match resolve_config_file(command, &cwd) {
         // A resolved config file: parse it (resolving `extends`) via `oxc_resolver`, expand its
-        // file globs into the root file list, and keep the config path to drive module resolution.
+        // file globs into the root file list, and keep the parsed config to drive module
+        // resolution and the compiler-option gates.
         Ok(Some(config_file)) => match parse_config_file(&config_file) {
             Ok(tsconfig) => {
                 println!("project: {}", config_file.display());
-                (get_file_names(&tsconfig), Some(config_file))
+                (get_file_names(&tsconfig), Some(tsconfig))
             }
             Err(message) => {
                 eprintln!("{message}");
@@ -56,7 +57,7 @@ fn tsc_compilation(command: &TypeCheckCommand) -> ExitCode {
     };
 
     // Parse the roots, follow their imports to load every dependent file, and collect them.
-    let program = Program::new(&cwd, &root_files, tsconfig_path.as_deref());
+    let program = Program::new(ProgramOptions { current_directory: cwd, root_files, config });
     for file in program.files() {
         println!("  {}", file.file_name().display());
     }

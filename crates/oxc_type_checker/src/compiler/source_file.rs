@@ -1,9 +1,10 @@
-//! A parsed source file — its arena, AST, and module record — referenced by [`FileId`].
+//! A parsed source file — its arena, AST, and module record — referenced by [`FileId`](super::FileId).
 //!
 //! Corresponds to typescript-go's `ast.SourceFile` (`internal/ast/ast.go`) + `SourceFileParseOptions`
-//! (`internal/ast/parseoptions.go`). Unlike the previous step (which held only paths), a loaded file
-//! now keeps its parsed AST so the checker can run over it without re-parsing. No `Semantic` is built
-//! yet — only the parse output (`Program` + `ModuleRecord`), which is what import discovery needs.
+//! (`internal/ast/parseoptions.go`). A loaded file keeps its parsed AST so the checker can run over
+//! it without re-parsing, plus the collected external module references (tsgo `Imports` /
+//! `ModuleAugmentations`, see [`references`](super::references)). No `Semantic` is built yet — only
+//! the parse output (`Program` + `ModuleRecord`), which is what import discovery needs.
 
 use std::{
     fmt,
@@ -17,10 +18,9 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_str::CompactStr;
 use oxc_syntax::module_record::ModuleRecord;
-use rustc_hash::FxHashMap;
 use self_cell::self_cell;
 
-use super::program::FileId;
+use super::references::{ExternalModuleReferences, collect_external_module_references};
 
 /// Inputs to parse a source file, mirroring tsgo's `ast.SourceFileParseOptions`.
 #[derive(Debug, Clone)]
@@ -61,23 +61,24 @@ unsafe impl Send for SourceFileCell {}
 
 /// A single parsed source file.
 ///
-/// Corresponds to tsgo's `*ast.SourceFile`. It keeps its arena-backed AST (`program`) and import
-/// data (`module_record`), plus the resolved module-graph edges filled in once every file has a
-/// [`FileId`].
+/// Corresponds to tsgo's `*ast.SourceFile`. It keeps its arena-backed AST (`program`), import data
+/// (`module_record`), and the module specifiers collected for resolution (tsgo `Imports` /
+/// `ModuleAugmentations`). The resolved module-graph edges live on the program's
+/// `ProcessedFiles`, not the file (as in tsgo).
 pub struct SourceFile {
     parse_options: SourceFileParseOptions,
     source_type: SourceType,
     cell: SourceFileCell,
     /// Parse diagnostics. Owned (they do not borrow the arena). Not yet rendered.
     diagnostics: Diagnostics,
-    /// Module-graph edges: each resolved import specifier -> the dependency's [`FileId`]. Populated
-    /// after all files are loaded (tsgo `resolutionsInFile`, roughly).
-    resolved_modules: FxHashMap<CompactStr, FileId>,
+    /// The file's external module references (tsgo `SourceFile.Imports` + `ModuleAugmentations`).
+    references: ExternalModuleReferences,
 }
 
 impl SourceFile {
-    /// Parse `source_text`, mirroring tsgo's `parser.ParseSourceFile`. `source_type` selects the
-    /// JS/TS dialect (derived from the file extension).
+    /// Parse `source_text`, mirroring tsgo's `parser.ParseSourceFile`: parse, then collect the
+    /// file's external module references. `source_type` selects the JS/TS dialect (derived from
+    /// the file extension).
     pub(crate) fn parse(
         parse_options: SourceFileParseOptions,
         source_text: String,
@@ -90,13 +91,15 @@ impl SourceFile {
             diagnostics.extend(ret.diagnostics.into_vec());
             SourceFileData { program: ret.program, module_record: ret.module_record }
         });
-        Self {
-            parse_options,
-            source_type,
-            cell,
-            diagnostics,
-            resolved_modules: FxHashMap::default(),
-        }
+        let references = {
+            let data = cell.borrow_dependent();
+            collect_external_module_references(
+                &data.program,
+                &data.module_record,
+                source_type.is_typescript_definition(),
+            )
+        };
+        Self { parse_options, source_type, cell, diagnostics, references }
     }
 
     /// The file's resolved name (absolute, normalized).
@@ -129,13 +132,27 @@ impl SourceFile {
         &self.cell.borrow_dependent().module_record
     }
 
-    /// Resolved module-graph edges: import specifier -> dependency [`FileId`].
-    pub fn resolved_modules(&self) -> &FxHashMap<CompactStr, FileId> {
-        &self.resolved_modules
+    /// The module specifiers this file imports, in tsgo's `SourceFile.Imports` order: static
+    /// imports/re-exports in source order, then dynamic `import()`s and `import("...")` type
+    /// queries in source order.
+    pub fn imports(&self) -> &[CompactStr] {
+        &self.references.imports
     }
 
-    pub(super) fn set_resolved_modules(&mut self, resolved: FxHashMap<CompactStr, FileId>) {
-        self.resolved_modules = resolved;
+    /// String-literal `declare module "..."` names that augment an existing external module
+    /// (tsgo `SourceFile.ModuleAugmentations`).
+    pub fn module_augmentations(&self) -> &[CompactStr] {
+        &self.references.module_augmentations
+    }
+
+    /// `/// <reference path="..." />` pragmas (tsgo `SourceFile.ReferencedFiles`).
+    pub fn referenced_files(&self) -> &[CompactStr] {
+        &self.references.referenced_files
+    }
+
+    /// `/// <reference types="..." />` pragmas (tsgo `SourceFile.TypeReferenceDirectives`).
+    pub fn type_reference_directives(&self) -> &[CompactStr] {
+        &self.references.type_reference_directives
     }
 }
 
@@ -145,7 +162,7 @@ impl fmt::Debug for SourceFile {
             .field("file_name", &self.parse_options.file_name)
             .field("source_type", &self.source_type)
             .field("diagnostics", &self.diagnostics.len())
-            .field("resolved_modules", &self.resolved_modules.len())
+            .field("imports", &self.references.imports.len())
             .finish_non_exhaustive()
     }
 }

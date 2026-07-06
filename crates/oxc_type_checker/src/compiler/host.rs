@@ -35,6 +35,11 @@ impl CompilerHost {
         &self.current_directory
     }
 
+    /// Whether `path` is an existing regular file (tsgo `host.FS().FileExists`).
+    pub fn file_exists(&self, path: &Path) -> bool {
+        self.fs.metadata(path).is_ok_and(oxc_resolver::FileMetadata::is_file)
+    }
+
     /// Read and parse the file described by `opts`, mirroring tsgo's `compilerHost.GetSourceFile`:
     /// read the text through the file system, then parse it.
     ///
