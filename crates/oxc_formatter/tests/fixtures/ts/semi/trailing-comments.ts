@@ -1,0 +1,40 @@
+// https://github.com/oxc-project/oxc/issues/23110
+// A trailing comment between the statement content and its semicolon
+// is printed after the semicolon, like Prettier >= 3.9
+foo = 1 /* a */;
+const myVar = "asdf" /* b */;
+let noInit: string | number /* c */;
+// Note: Prettier moves the comment only for an exported type alias and keeps
+// `type T = string /* t */;` as-is; oxfmt intentionally applies the rule uniformly
+type T = string /* t */;
+function f() {
+  return foo /* d */;
+}
+function g() {
+  return /* no argument */;
+}
+function h() {
+  throw foo /* e */;
+}
+import { a } from "mod" /* f */;
+import "side-effect" /* g */;
+import x, { y } from "mod2" with { type: "json" } /* h */;
+export { b } from "mod" /* i */;
+export * from "mod" /* j */;
+export const exported = 1 /* k */;
+export default foo /* l */;
+1 as const /* m */;
+
+// Multiple comments move together, comments after the semicolon stay
+baz = 3 /* n1 */ /* n2 */;
+qux = 4 /* o1 */; /* o2 */
+
+// An own-line comment becomes a leading comment of the next statement
+bar = 2
+/* own line */;
+quux();
+
+// A trailing suppression comment keeps the statement's original text
+suppressed  =  ugly(   1) // prettier-ignore
+;
+notSuppressed3();
